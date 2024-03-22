@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	binglib "github.com/Harry-zklcdc/bing-lib"
 )
 
 func ModelHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +28,7 @@ func ModelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if modelId != "dall-e-3" && !common.IsInArray(chatMODELS, modelId) {
+	if !common.IsInArray([]string{DALL_E_3, GPT_35_TURBO, GPT_4_TURBO_PREVIEW, GPT_35_TURBO_16K, GPT_4_32K, GPT_4_VISION}, modelId) && !common.IsInArray(binglib.ChatModels[:], strings.ReplaceAll(modelId, "-vision", "")) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))
 		return
@@ -42,7 +44,9 @@ func ModelHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
+		common.Logger.Error("ModelHandler Marshal Error: %v", err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(respData)
 }

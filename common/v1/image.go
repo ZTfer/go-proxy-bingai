@@ -4,8 +4,8 @@ import (
 	"adams549659584/go-proxy-bingai/common"
 	"encoding/json"
 	"io"
-	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	binglib "github.com/Harry-zklcdc/bing-lib"
@@ -13,6 +13,8 @@ import (
 
 var (
 	globalImage *binglib.Image
+
+	DALL_E_3 = "dall-e-3"
 )
 
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,19 +45,8 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	image.SetXFF(common.GetRandomIP())
 
 	cookie := r.Header.Get("Cookie")
-	if cookie == "" {
-		if len(common.USER_TOKEN_LIST) > 0 {
-			seed := time.Now().UnixNano()
-			rng := rand.New(rand.NewSource(seed))
-			cookie = common.USER_TOKEN_LIST[rng.Intn(len(common.USER_TOKEN_LIST))]
-		} else {
-			if common.BypassServer != "" {
-				t, _ := getCookie(cookie, "", "")
-				if t != "" {
-					cookie = t
-				}
-			}
-		}
+	if cookie == "" || !strings.Contains(cookie, "_U=") {
+		cookie = image.GetCookies()
 	}
 	image.SetCookies(cookie)
 
@@ -63,6 +54,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
+		common.Logger.Error("ReadAll Error: %v", err)
 		return
 	}
 
@@ -78,6 +70,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
+			common.Logger.Error("Marshal Error: %v", err)
 			return
 		}
 		w.Write(resData)
@@ -88,6 +81,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
+		common.Logger.Error("Image Error: %v", err)
 		return
 	}
 
@@ -101,7 +95,9 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
+		common.Logger.Error("Marshal Error: %v", err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(resData)
 }

@@ -10,6 +10,7 @@ declare const ChatHomeScreen: {
 };
 
 declare const _G: {
+  Region: string;
   IG: string;
   S: string;
   SP: Array<number>;
@@ -339,4 +340,6 @@ declare const CIB: {
 
   changeColorScheme: (O: 0 | 1) => {};
   registerContext: (O) => {};
+  showConversation: () => {};
+  showNotebook: () => {};
 };

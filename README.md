@@ -10,7 +10,7 @@
 
 一键部署, 国内可用, 无需登录即可畅聊
 
-![Golang](https://img.shields.io/badge/Golang-1.21.6-blue?style=flat-square&logo=go) ![Vue3](https://img.shields.io/badge/Vue-3.3.2-green?style=flat-square&logo=vue.js)
+![Golang](https://img.shields.io/badge/Golang-1.22.1-blue?style=flat-square&logo=go) ![Vue3](https://img.shields.io/badge/Vue-3.3.2-green?style=flat-square&logo=vue.js)
 
 ![GitHub stars](https://img.shields.io/github/stars/Harry-zklcdc/go-proxy-bingai.svg?style=flat-square&label=Stars&logo=github) ![GitHub forks](https://img.shields.io/github/forks/Harry-zklcdc/go-proxy-bingai.svg?style=flat-square&label=Forks&logo=github) ![Release](https://img.shields.io/github/v/release/Harry-zklcdc/go-proxy-bingai.svg?style=flat-square&label=Release&logo=github&color=light-green)
 
@@ -52,7 +52,7 @@
 
 > #### Cloudflare Worker 部署
 >
-> [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://github.com/Harry-zklcdc/go-proxy-bingai/wiki/Cloudflare-Worker-%E9%83%A8%E7%BD%B2)
+> [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Harry-zklcdc/go-proxy-bingai)
 
 ### 人机验证服务器
 
@@ -70,7 +70,7 @@
 
 ✅ 支持现有开源 ChatGPT 提示词库
 
-✅ 一键登录 (需配合[油猴脚本使用](https://greasyfork.org/zh-CN/scripts/487409-go-proxy-bingai))
+✅ 一键登录
 
 ✅ 登录账号支持画图
 
@@ -125,7 +125,9 @@
 
 [![Github Issus](https://img.shields.io/github/issues/Harry-zklcdc/go-proxy-bingai?style=flat-square&logo=github)](https://github.com/Harry-zklcdc/go-proxy-bingai/issues)
 
-[![加入 Telegram 频道](https://img.shields.io/badge/加入_Telegram_频道-ProxyBingAI🚀-blue?style=flat-square&logo=telegram)](https://t.me/GoProxyBingAI)
+[![加入 Telegram 群组](https://img.shields.io/badge/加入_Telegram_群组-ProxyBingAI🚀-blue?style=flat-square&logo=telegram)](https://t.me/GoProxyBingAI)
+
+[![加入 Discord 服务器](https://img.shields.io/badge/加入_Discord_服务器-ProxyBingAI🚀-slateblue?style=flat-square&logo=discord)](https://discord.gg/gHUhHqMp8s)
 
 
 ## ❗️ 免责声明

@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -25,6 +24,7 @@ var (
 	BING_SYDNEY_URL, _              = url.Parse(BING_SYDNEY_DOMAIN)
 	BING_URL, _                     = url.Parse("https://www.bing.com")
 	EDGE_SVC_URL, _                 = url.Parse("https://edgeservices.bing.com")
+	BING_SR_URT, _                  = url.Parse("https://sr.bing.com")
 	DISIGNER_URL, _                 = url.Parse("https://designer.microsoft.com")
 	DISIGNER_CDN_URL, _             = url.Parse("https://cdn.designerapp.osi.office.net")
 	DISIGNER_APP_URL, _             = url.Parse("https://designerapp.officeapps.live.com")
@@ -100,11 +100,11 @@ func NewSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 			req.Header.Set("Referer", fmt.Sprintf("%s/edgesvc/compose", EDGE_SVC_URL.String()))
 			req.Header.Set("Origin", EDGE_SVC_URL.String())
 		} else if strings.Contains(originalPath, "/sydney/") {
-			req.Header.Set("Referer", fmt.Sprintf("%s/search?q=Bing+AI", BING_URL.String()))
+			req.Header.Set("Referer", fmt.Sprintf("%s/chat?q=Bing+AI", BING_URL.String()))
 			req.Header.Set("Origin", BING_URL.String())
 			req.Header.Set("Host", BING_SYDNEY_URL.Host)
 		} else {
-			req.Header.Set("Referer", fmt.Sprintf("%s/search?q=Bing+AI", BING_URL.String()))
+			req.Header.Set("Referer", fmt.Sprintf("%s/chat?q=Bing+AI", BING_URL.String()))
 			req.Header.Set("Origin", target.String())
 		}
 
@@ -198,13 +198,13 @@ func NewSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 			contentEncoding := res.Header.Get("Content-Encoding")
 			switch contentEncoding {
 			case "gzip":
-				// log.Println("ContentEncoding : ", contentEncoding, " Path : ", originalPath)
+				Logger.Debug("ContentEncoding : ", contentEncoding, " Path : ", originalPath)
 				modifyGzipBody(res, originalScheme, originalHost)
 			case "br":
-				// log.Println("ContentEncoding : ", contentEncoding, " Path : ", originalPath)
+				Logger.Debug("ContentEncoding : ", contentEncoding, " Path : ", originalPath)
 				modifyBrBody(res, originalScheme, originalHost)
 			default:
-				log.Println("ContentEncoding default : ", contentEncoding, " Path : ", originalPath)
+				Logger.Debug("ContentEncoding default : ", contentEncoding, " Path : ", originalPath)
 				modifyDefaultBody(res, originalScheme, originalHost)
 			}
 		}
@@ -240,8 +240,8 @@ func NewSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 			for _, delLocationDomain := range DEL_LOCATION_DOMAINS {
 				if strings.HasPrefix(location, delLocationDomain) {
 					res.Header.Set("Location", location[len(delLocationDomain):])
-					log.Println("Del Location Domain ：", location)
-					log.Println("RandIP : ", randIP)
+					Logger.Debug("Del Location Domain ：", location)
+					Logger.Debug("RandIP : ", randIP)
 					// 换新ip
 					randIP = GetRandomIP()
 				}
@@ -266,7 +266,7 @@ func NewSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 		return nil
 	}
 	errorHandler := func(res http.ResponseWriter, req *http.Request, err error) {
-		log.Println("代理异常 ：", err)
+		Logger.Error("代理异常 ：", err)
 		res.Write([]byte(err.Error()))
 	}
 
@@ -315,7 +315,7 @@ func getRandCookie(req *http.Request) (int, string) {
 	if ckRandIndex != nil && ckRandIndex.Value != "" {
 		tmpIndex, err := strconv.Atoi(ckRandIndex.Value)
 		if err != nil {
-			log.Println("ckRandIndex err ：", err)
+			Logger.Error("ckRandIndex err ：", err)
 			return 0, ""
 		}
 		if tmpIndex < utLen {
@@ -334,6 +334,7 @@ func replaceResBody(originalBody string, originalScheme string, originalHost str
 	if originalScheme == "https" {
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, BING_URL.Host, originalHost)
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, EDGE_SVC_URL.Host, originalHost)
+		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, BING_SR_URT.Host, originalHost)
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_CDN_URL.Host, originalHost+"/designer/cdn")
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_APP_EDOG_URL.Host, originalHost+"/designer/app-edog")
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_DOCUMENT_URL.Host, originalHost+"/designer/document")
@@ -346,6 +347,7 @@ func replaceResBody(originalBody string, originalScheme string, originalHost str
 		originalDomain := fmt.Sprintf("%s://%s", originalScheme, originalHost)
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, BING_URL.String(), originalDomain)
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, EDGE_SVC_URL.Host, originalHost)
+		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, BING_SR_URT.String(), originalDomain)
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_CDN_URL.String(), originalDomain+"/designer/cdn")
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_APP_EDOG_URL.String(), originalDomain+"/designer/app-edog")
 		modifiedBodyStr = strings.ReplaceAll(modifiedBodyStr, DISIGNER_DOCUMENT_URL.String(), originalDomain+"/designer/document")

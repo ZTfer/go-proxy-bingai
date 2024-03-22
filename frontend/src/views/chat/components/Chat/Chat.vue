@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { NEmpty, NButton, useDialog, useMessage, NResult, NInput } from 'naive-ui';
+import { onMounted, ref, computed, h } from 'vue';
+import { NEmpty, NButton, useDialog, useMessage, NResult, NInput, NAlert, NModal} from 'naive-ui';
 import conversationCssText from '@/assets/css/conversation.css?raw';
 import { usePromptStore, type IPrompt } from '@/stores/modules/prompt';
 import { storeToRefs } from 'pinia';
@@ -138,6 +138,35 @@ const initSysConfig = async () => {
           return;
         }
         await afterAuth(res.data);
+        if (res.data.info != '') {
+          const info = JSON.parse(res.data.info);
+          message.create(info['content'], {
+            type: info['type'],
+            keepAliveOnHover: true,
+            showIcon: true,
+            render: (props) => {
+              return h(
+                NAlert,
+                {
+                  closable: true,
+                  type: props.type === 'loading' ? 'default' : props.type,
+                  title: info['title'],
+                  style: {
+                    boxShadow: 'var(--n-box-shadow)',
+                    maxWidth: 'calc(100vw - 32px)',
+                    width: '360px',
+                    position: 'fixed',
+                    top: '20px',
+                    right: '12px',
+                  }
+                },
+                {
+                  default: () => props.content
+                }
+              )
+            }
+          });
+        }
       }
       break;
     case ApiResultCode.UnLegal:
@@ -191,6 +220,7 @@ const hackStyle = async() => {
   }
   welcomeEle?.shadowRoot?.querySelector('.preview-container')?.remove();
   welcomeEle?.shadowRoot?.querySelector('.footer')?.remove();
+  welcomeEle?.shadowRoot?.querySelector('.controls')?.setAttribute('style', 'margin-bottom: 80px;');
   serpEle?.shadowRoot?.querySelector('cib-serp-feedback')?.remove();
   if (isMobile()) {
     welcomeEle?.shadowRoot?.querySelector('.container-item')?.remove();
@@ -424,13 +454,13 @@ const auth = async () => {
     <!-- 服务器选择 -->
     <ChatServiceSelect />
     <!-- 授权 -->
-    <div v-if="isShowUnauthorizedModal" class="fixed top-0 left-0 w-screen h-screen flex justify-center items-center bg-black/40 z-50">
-      <NResult class="box-border w-11/12 lg:w-[400px] px-4 py-4 bg-white rounded-md" status="403" title="401 未授权">
+    <NModal v-model:show="isShowUnauthorizedModal" preset="dialog" :close-on-esc="false" :mask-closable="false" :show-icon="false">
+      <NResult class="box-border w-11/12 lg:w-[400px] px-4 py-4 rounded-md" status="403" title="401 未授权">
         <template #footer>
           <NInput class="w-11/12" v-model:value="authKey" type="password" placeholder="请输入授权码" maxlength="60" clearable></NInput>
           <n-button class="mt-4" secondary type="info" :loading="isAuthBtnLoading" @click="auth">授权</n-button>
         </template>
       </NResult>
-    </div>
+    </NModal>
   </footer>
 </template>

@@ -2,8 +2,8 @@ package v1
 
 import (
 	"adams549659584/go-proxy-bingai/common"
-	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -14,10 +14,18 @@ import (
 )
 
 func init() {
+	apikey = os.Getenv("APIKEY")
+	blankApikey = os.Getenv("Go_Proxy_BingAI_BLANK_API_KEY") != ""
+
+	if !blankApikey && apikey == "" {
+		common.Logger.Info("APIKEY is empty, generate a new one.")
+		apikey = "sk-" + hex.NewHex(32)
+		common.Logger.Info("APIKEY: %s", apikey)
+	}
 	go func() {
 		time.Sleep(200 * time.Millisecond)
 		t, _ := getCookie("", "", "")
-		log.Println("BingAPI Ready!")
+		common.Logger.Info("BingAPI Ready!")
 		globalChat = binglib.NewChat(t).SetBingBaseUrl("http://localhost:" + common.PORT).SetSydneyBaseUrl("ws://localhost:" + common.PORT).SetBypassServer(common.BypassServer)
 		globalImage = binglib.NewImage(t).SetBingBaseUrl("http://localhost:" + common.PORT).SetBypassServer(common.BypassServer)
 	}()
@@ -25,8 +33,11 @@ func init() {
 
 func getCookie(reqCookie, convId, rid string) (cookie string, err error) {
 	cookie = reqCookie
+	if common.AUTH_KEY != "" {
+		cookie += "; " + common.AUTH_KEY_COOKIE_NAME + "=" + common.AUTH_KEY
+	}
 	c := request.NewRequest()
-	res := c.SetUrl("http://localhost:"+common.PORT+"/search?q=Bing+AI&showconv=1&FORM=hpcodx&ajaxhist=0&ajaxserp=0&cc=us").
+	res := c.SetUrl("http://localhost:"+common.PORT+"/chat?q=Bing+AI&showconv=1&FORM=hpcodx&ajaxhist=0&ajaxserp=0&cc=us").
 		SetHeader("User-Agent", common.User_Agent).
 		SetHeader("Cookie", cookie).Do()
 	headers := res.GetHeaders()
@@ -45,7 +56,15 @@ func getCookie(reqCookie, convId, rid string) (cookie string, err error) {
 	}
 	resp, status, err := binglib.Bypass(common.BypassServer, reqCookie, "local-gen-"+hex.NewUUID(), IG, convId, rid, T)
 	if err != nil || status != http.StatusOK {
+		common.Logger.Error("Bypass Error: %v", err)
 		return
 	}
-	return resp.Result.Cookies + "; _U=" + hex.NewHex(128), nil
+	cookie = resp.Result.Cookies
+	if len(common.USER_TOKEN_LIST) == 0 {
+		cookie += "; _U=" + hex.NewHex(128)
+	}
+	if common.AUTH_KEY != "" {
+		cookie += "; " + common.AUTH_KEY_COOKIE_NAME + "=" + common.AUTH_KEY
+	}
+	return cookie, nil
 }

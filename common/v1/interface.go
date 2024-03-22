@@ -1,17 +1,17 @@
 package v1
 
 import (
-	"os"
-
 	binglib "github.com/Harry-zklcdc/bing-lib"
 )
 
-var apikey = os.Getenv("APIKEY")
+var apikey string
+var blankApikey bool
 
 type chatRequest struct {
-	Messages []binglib.Message `json:"messages"`
-	Model    string            `json:"model"`
-	Stream   bool              `json:"stream"`
+	Messages    []binglib.Message `json:"messages"`
+	Model       string            `json:"model"`
+	Stream      bool              `json:"stream"`
+	Temperature float64           `json:"temperature,omitempty"`
 }
 
 type chatResponse struct {
